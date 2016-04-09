@@ -55,7 +55,67 @@
 
 \section{Softmax regression gradient calculation}
 \paragraph{(a)}
+
+By chain rule, we have:
+\begin{equation}
+\frac{\partial l}{\partial W_{i,j}} = \frac{\partial l}{\partial \hat{y_i}} \frac{\partial \hat{y_i}}{\partial W_{i,j}}
+\end{equation}
+
+\begin{equation}
+\frac{\partial l}{\partial \hat{y_i}} 
+= \frac{\partial }{\partial \hat{y_i}} (-\sum\nolimits_j {y_j \log \hat{y_j}})
+\end{equation}
+
+When $i \neq j$, the elements in the loss function are constant compared to $y_i$.
+We can just consider the element that $i=j$.
+
+\begin{equation}
+\frac{\partial l}{\partial \hat{y_i}} 
+= \frac{\partial }{\partial \hat{y_i}} (- {y_i \log \hat{y_i}})
+= \frac{-y_i}{(\ln 10) \hat{y_i}}
+= \frac{-y_i}{\hat{y_i}}
+\end{equation}
+
+From assignment 1, we have:
+\begin{equation}
+(X_{out})_i = \frac{exp(\beta (X_{in})_i)}{\sum\nolimits_j exp(\beta (X_{in})_j)}
+\end{equation}
+
+and also
+\begin{equation}
+\frac{\partial (X_{out})_i }{\partial (X_{in})_i }
+= \frac{\partial}{\partial (X_{in})_i} \frac{exp(\beta (X_{in})_i)}{\sum\nolimits_j exp(\beta (X_{in})_j)} = \beta (X_{out})_i (1-(X_{out})_i)
+\end{equation}
+
+So 
+\begin{equation}
+\frac{\partial \hat{y_i}}{\partial W_{i,j}} 
+= \frac{\partial }{\partial W_{i,j}} \frac{exp(W_{i}x+b_i)}{\sum\nolimits_k exp(W_{k}x+b_k)} \\
+= x_{j} \hat{y_i} (1- \hat{y_i})
+\end{equation}
+
+Now we can calculate $\frac{\partial l}{\partial W_{i,j}}$
+\begin{equation}
+\frac{\partial l}{\partial W_{i,j}} = \frac{\partial l}{\partial \hat{y_i}} \frac{\partial \hat{y_i}}{\partial W_{i,j}}
+= \frac{-y_i}{\hat{y_i}} x_{j} \hat{y_i} (1- \hat{y_i})
+= {-y_i} {x_{j}} (1- \hat{y_i})
+\end{equation}
+
+
 \paragraph{(b)}
+When $y_{c1} = 1$ and $\hat{y_{c2}} = 1$ and $c1 \neq c2$, the model has wrong output with confidence 100\% \\
+for example: \\
+model output = [1, 0] \\ 
+true label = [0, 1]  \\
+
+From the loss function in part(a), we will get a very very large loss at $y_{c1} \log \hat{y_{c1}}$ and get 0 error in other positions.
+As for the gradient, since
+\begin{equation}
+\frac{\partial l}{\partial W_{i,j}} = {-y_i} {x_{j}} (1- \hat{y_i})
+\end{equation}
+when $i=c1$, it will increase the W value that contribute to the correct label, otherwise the W value remain unchanged.
+With the softmax function, the $\hat y_i$ for the wrong label will be reduced and the correct the $\hat y_i$ will increase in next forward propagation.
+
 
 \section{Chain rule}
 \paragraph{(a)}
@@ -92,7 +152,7 @@ Where
 \paragraph{(b)}
 For $x = 1, y = 0$,
 \begin{equation}
-\sigma{(x)} = \sigma{(1)} = 0.269
+\sigma{(x)} = \sigma{(1)} = 0.731
 \end{equation}
 
 \begin{equation}
@@ -104,16 +164,16 @@ a = 1 + \sigma{(0)} = 1.5
 \end{equation}
 
 \begin{equation}
-b = 3*1 + 0 - \sigma{(1)} = 2.731
+b = 3*1 + 0 - \sigma{(1)} = 2.269
 \end{equation}
 
 So we can calculate derivitive of f by:
 \begin{equation}
-\frac{\partial f}{\partial x} = \frac{2*1*2.731-(3-0.269*(1-0.269))*1.5}{2.731^2} = 1.633
+\frac{\partial f}{\partial x} = \frac{2*1*2.269-(3-0.731*(1-0.731))*1.5}{2.269^2} = 0.0646
 \end{equation}
 
 \begin{equation}
-\frac{\partial f}{\partial y} = \frac{0.5*(1-0.5)*2.731-1.5}{2.731^2} = -0.1096
+\frac{\partial f}{\partial y} = \frac{0.5*(1-0.5)*2.269-1.5}{2.269^2} = -0.181
 \end{equation}
 
 \section{Variants of pooling}
@@ -195,15 +255,25 @@ Where function R counts the number of probability for prediction $\hat y_c$ that
 R = \sum\nolimits_{c \in C} \mathds{1}_{ \hat y_c > \hat y_L }
 \end{equation}
 
-The top-1 errors represents the error rate that the prediction is not the same with true label. This is useful to compare the performance of different models. However, it cannot show how how good the model is in general.
+The top-1 errors represents the error rate that the prediction is not the same with true label. 
+This is useful to compare the performance of different models. However, it cannot show how how good the model is in general.
 Sometimes the categories in a image may be ambiguous and it may be described as multiple labels. The order of several possible labels is ambiguous.
 Using top-5 errors provides a more general understanding of learning ability of the model. 
 
 \section{t-SNE}
 \paragraph{(a)}
+The crowding problem happens when we try to project high dimentional dataset into lower dimentional space. 
+The distance between records in lower dimentional space will be much smaller than in high dimentional space.
+In some clustering algorithms, the records will form a large group in the center and fail to produce nature clustering.
+t-SNE use heavy-tailed distribution to reduce this problem. 
+It convert distances into probabilities using a Guassian distribution in high-dimentional space.
+Then use a much heavier tails probability distribution in the low-dimentional map.
+This allows a moderate distance in the high-dimentional space to be modeled by a much larger distance in low dimention.
 
 \paragraph{(b)}
-
+\begin{equation}
+\frac{\partial C}{\partial y_i} = \frac{\partial}{\partial X_ij}{...} = \sum\nolimits {W_ij}{ \frac{\partial E}{\partial X^(i-1)}}
+\end{equation}
 
 \section{Proximal gradient decent}
 
